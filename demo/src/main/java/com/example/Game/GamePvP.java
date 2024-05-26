@@ -1,5 +1,18 @@
 package com.example.Game;
 
+import java.net.URLEncoder;
+import org.asynchttpclient.*;
+import org.json.JSONObject;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+import javax.swing.JOptionPane;
 
 import com.example.Main;
 import com.example.Piece.Bishop;
@@ -11,6 +24,7 @@ import com.example.Piece.Queen;
 import com.example.Piece.Rook;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -18,6 +32,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.FontWeight;
 import javafx.util.Pair;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.stage.Stage;
 
 public class GamePvP extends Rule{
 	public static String startFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
@@ -30,8 +48,107 @@ public class GamePvP extends Rule{
         game_mouse = mouse;
         copyPieces(pieces, simPieces);
     }
-
-    
+    private static List<String> getFenAndMoves() { // getFenAndMoves from RapidAPI using AssyhcHttpClient
+		List<String> fenAndMoves = new ArrayList<>();
+		try {
+			// Define the FEN string and depth
+			String fen = pieceToFen();
+			int depth = 12;
+	
+			// Encode the FEN string to be URL safe
+			String encodedFEN = URLEncoder.encode(fen, "UTF-8");
+	
+			// Form the URL
+			String apiUrl = "https://chess-stockfish-16-api.p.rapidapi.com/chess/api";
+	
+			// Create AsyncHttpClient
+			AsyncHttpClient client = new DefaultAsyncHttpClient();
+	
+			// Send POST request
+			String responseBody = client.preparePost(apiUrl)
+				.addHeader("content-type", "application/x-www-form-urlencoded")
+				.addHeader("X-RapidAPI-Key", "6a1ed3e927msh2d8d4c93672832dp14f057jsn63c9b950ae4f")
+				.addHeader("X-RapidAPI-Host", "chess-stockfish-16-api.p.rapidapi.com")
+				.setBody("fen=" + encodedFEN)
+				.execute()
+				.toCompletableFuture()
+				.thenApply(Response::getResponseBody)
+				.join();
+	
+			JSONObject json = new JSONObject(responseBody);
+			String bestMove = json.getString("bestmove");
+	
+			fenAndMoves.add(fen);
+			fenAndMoves.add(bestMove);
+	
+			// Close the client
+			client.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return fenAndMoves;
+	}
+    public static String pieceToFen() { // get the FEN string from the pieces
+		char[][] board = new char[8][8];
+	
+		// Initialize the board with empty squares
+		for (char[] row : board) {
+			Arrays.fill(row, '1');
+		}
+	
+		// Place the pieces on the board
+		for (Piece piece : pieces) {
+			char pieceChar;
+			if (piece instanceof Pawn) {
+				pieceChar = piece.color == 0 ? 'P' : 'p';
+			} else if (piece instanceof Rook) {
+				pieceChar = piece.color == 0 ? 'R' : 'r';
+			} else if (piece instanceof Knight) {
+				pieceChar = piece.color == 0 ? 'N' : 'n';
+			} else if (piece instanceof Bishop) {
+				pieceChar = piece.color == 0 ? 'B' : 'b';
+			} else if (piece instanceof Queen) {
+				pieceChar = piece.color == 0 ? 'Q' : 'q';
+			} else if (piece instanceof King) {
+				pieceChar = piece.color == 0 ? 'K' : 'k';
+			} else {
+				continue;
+			}
+			board[piece.row][piece.col] = pieceChar;
+		}
+	
+		// Convert the board to FEN format
+		StringBuilder fen = new StringBuilder();
+		for (int i = 0; i < 8; i++) {
+			int emptyCount = 0;
+			for (int j = 0; j < 8; j++) {
+				if (board[i][j] == '1') {
+					emptyCount++;
+				} else {
+					if (emptyCount != 0) {
+						fen.append(emptyCount);
+						emptyCount = 0;
+					}
+					fen.append(board[i][j]);
+				}
+			}
+			if (emptyCount != 0) {
+				fen.append(emptyCount);
+			}
+			if (i != 7) {
+				fen.append('/');
+			}
+		}
+        fen.append(' ');
+    	fen.append(currentColor == 0 ? 'w' : 'b');
+		// Append the castling information
+		// fen.append(' ');
+		// fen.append("KQkq");
+	
+		// // Append the en passant target square ("-"), halfmove clock ("0"), and fullmove number ("1")
+		// fen.append(" - 0 1");
+		return fen.toString();
+	}
     
     public void gameloop(){
         new AnimationTimer() {
@@ -139,7 +256,10 @@ public class GamePvP extends Rule{
                                     isPromo = true;
                                 }else{
                                     activeP = null;
+                                    String fen = pieceToFen();
+                                    System.out.println(fen);
                                     changeTurn();
+                                    
                                 }
                             }
                         }

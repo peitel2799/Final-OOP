@@ -3,21 +3,20 @@ package com.example.Game;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.asynchttpclient.*;
 import org.json.JSONObject;
+import org.asynchttpclient.*;
 
-public class GamePvC {
-        public static void main(String[] args) {
-            List<String> fenAndMoves = getFenAndMoves();
-            System.out.println(fenAndMoves);
-        }
-    
-        private static List<String> getFenAndMoves() {
+public class Api_call {
+    public static void main(String[] args) {
+        List<String> fenAndMoves = getFenAndMoves("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        System.out.println(fenAndMoves);
+    }
+
+    static public List<String> getFenAndMoves(String fen) {
             List<String> fenAndMoves = new ArrayList<>();
             try {
                 // Define the FEN string and depth
-                String fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+                //fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
                 // int depth = 12;
         
                 // Encode the FEN string to be URL safe

@@ -409,104 +409,124 @@ public class Puzzle extends Rule {
         }
     }
     
-    private void render(){
-        //Draw Background
+    private void render() {
+        // Draw Background
         gc.drawImage(background, 0, 0, Main.WIDTH, Main.HEIGHT);
         gc.setStroke(Color.BLACK);
         gc.setLineWidth(10);
         gc.strokeLine(800, 0, 800, Main.HEIGHT);
 
-        //Draw Board
+        // Draw Board
         Board.draw(gc);
-
-        //Draw pieces
-        for(Piece p : pieces){
-            p.draw(gc);
+        if(!win){
+            String premove = moves[moveIndex - 1];
+            int temp1 = getColFromMove(premove.charAt(0));
+            int temp2= 8 - Character.getNumericValue(premove.charAt(1));
+            int temp3 = getColFromMove(premove.charAt(2));
+            int temp4 = 8 - Character.getNumericValue(premove.charAt(3));
+            gc.setFill(Color.web("#a4b9db"));
+            gc.setLineWidth(1);
+            gc.fillRect(temp1*Board.SQUARE_SIZE, temp2*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
+            gc.strokeRoundRect(temp1*Board.SQUARE_SIZE, temp2*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE, 0, 0);
+            gc.fillRect(temp3*Board.SQUARE_SIZE, temp4*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
+            gc.strokeRoundRect(temp3*Board.SQUARE_SIZE, temp4*Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE, 0, 0);
         }
         
-        //Active Piece
-        if(activeP != null){
+        // Draw pieces
+        for (Piece p : pieces) {
+            p.draw(gc);
+        }
+
+        // Active Piece
+        if (activeP != null) {
             gc.setGlobalAlpha(0.3); // Set opacity to 50%
             gc.setFill(Color.WHITE);
-            gc.fillRect(activeP.preCol * Board.SQUARE_SIZE, activeP.preRow * Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE);
+            gc.fillRect(activeP.preCol * Board.SQUARE_SIZE, activeP.preRow * Board.SQUARE_SIZE, Board.SQUARE_SIZE,
+                    Board.SQUARE_SIZE);
             gc.setGlobalAlpha(0.7);
             gc.setStroke(Color.WHITE);
             gc.setLineWidth(Board.SQUARE_SIZE / 20);
             int arcSize = 20;
-            gc.strokeRoundRect(activeP.col * Board.SQUARE_SIZE, activeP.row * Board.SQUARE_SIZE, Board.SQUARE_SIZE, Board.SQUARE_SIZE, arcSize , arcSize);
-            
-            if(!all_move.isEmpty()){
-                for(Pair<Integer, Integer> pos: all_move){
+            gc.strokeRoundRect(activeP.col * Board.SQUARE_SIZE, activeP.row * Board.SQUARE_SIZE, Board.SQUARE_SIZE,
+                    Board.SQUARE_SIZE, arcSize, arcSize);
+
+            if (!all_move.isEmpty()) {
+                for (Pair<Integer, Integer> pos : all_move) {
                     int row = (int) pos.getKey();
                     int col = (int) pos.getValue();
                     boolean hit = false;
                     gc.setFill(Color.BLACK);
                     gc.setGlobalAlpha(0.3);
-                    for(Piece p: pieces){
-                        if(p.row == row && p.col == col && p.color != activeP.color){
+                    for (Piece p : pieces) {
+                        if (p.row == row && p.col == col && p.color != activeP.color) {
                             hit = true;
                         }
                     }
-                    if(hit){
+                    if (hit) {
                         int temp = Board.HALF_SQUARE_SIZE / 15;
                         gc.setStroke(Color.BLACK);
                         gc.setLineWidth(Board.SQUARE_SIZE / 12);
-                        gc.strokeOval(col * Board.SQUARE_SIZE + temp, row * Board.SQUARE_SIZE+temp, Board.SQUARE_SIZE- 2*temp, Board.SQUARE_SIZE-2*temp);
-                    }else gc.fillOval(col * Board.SQUARE_SIZE + Board.HALF_SQUARE_SIZE/5 *3, row * Board.SQUARE_SIZE + Board.HALF_SQUARE_SIZE / 5 *3, Board.SQUARE_SIZE/10 *4, Board.SQUARE_SIZE/10 *4);;
+                        gc.strokeOval(col * Board.SQUARE_SIZE + temp, row * Board.SQUARE_SIZE + temp,
+                                Board.SQUARE_SIZE - 2 * temp, Board.SQUARE_SIZE - 2 * temp);
+                    } else
+                        gc.fillOval(col * Board.SQUARE_SIZE + Board.HALF_SQUARE_SIZE / 5 * 3,
+                                row * Board.SQUARE_SIZE + Board.HALF_SQUARE_SIZE / 5 * 3, Board.SQUARE_SIZE / 10 * 4,
+                                Board.SQUARE_SIZE / 10 * 4);
+                    ;
                 }
             }
             gc.setGlobalAlpha(1);
             activeP.draw(gc);
         }
 
-        //MESSAGE
+        // MESSAGE
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", FontWeight.BOLD, 30));
-        gc.setFontSmoothingType(FontSmoothingType .LCD);
-        if(win) {
+        gc.setFontSmoothingType(FontSmoothingType.LCD);
+
+        if (stalemate) {
             gc.setLineWidth(200);
             gc.setStroke(Color.WHITE);
             gc.setGlobalAlpha(0.5);
-            gc.strokeLine(0, Main.HEIGHT/2, Main.WIDTH, Main.HEIGHT/2);
+            gc.strokeLine(0, Main.HEIGHT / 2, Main.WIDTH, Main.HEIGHT / 2);
             gc.setGlobalAlpha(1);
             gc.setFill(Color.BLACK);
             gc.setFont(Font.font("Arial", FontWeight.BOLD, 100));
-            if(currentColor == WHITE){
-                gc.fillText("BLACK WINS", 200, Main.HEIGHT/2 +35);
-            }else{
-                gc.fillText("WHITE WINS", 200, Main.HEIGHT/2 +35);
+            gc.fillText("STALEMATE", 200, Main.HEIGHT / 2 + 35);
+        }
+        else if(win){
+            gc.setLineWidth(200);
+            gc.setStroke(Color.WHITE);
+            gc.setGlobalAlpha(0.5);
+            gc.strokeLine(0, Main.HEIGHT / 2, Main.WIDTH, Main.HEIGHT / 2);
+            gc.setGlobalAlpha(1);
+            gc.setFill(Color.BLACK);
+            gc.setFont(Font.font("Arial", FontWeight.BOLD, 100));
+            if (currentColor == WHITE) {
+                gc.fillText("BLACK WINS", 200, Main.HEIGHT / 2 + 35);
+            } else {
+                gc.fillText("WHITE WINS", 200, Main.HEIGHT / 2 + 35);
             }
-    
         }
-        if(stalemate){
-            gc.setLineWidth(200);
-            gc.setStroke(Color.WHITE);
-            gc.setGlobalAlpha(0.5);
-            gc.strokeLine(0, Main.HEIGHT/2, Main.WIDTH, Main.HEIGHT/2);
-            gc.setGlobalAlpha(1);
-            gc.setFill(Color.BLACK);
-            gc.setFont(Font.font("Arial", FontWeight.BOLD, 100));
-            gc.fillText("STALEMATE", 200, Main.HEIGHT/2 +35);
-        }
-        else{
-            if(isPromo){
+        else {
+            if (isPromo) {
                 gc.fillText("Promote to: ", 850, 180);
-                for(Piece p: promoPieces){
+                for (Piece p : promoPieces) {
                     p.draw(gc);
                 }
             }
             // NORMAL
-            else{
-                if(currentColor == WHITE){
+            else {
+                if (currentColor == WHITE) {
                     gc.fillText("WHITE TURN", 850, 650);
-                    if( checkingP != null && checkingP.color == BLACK){
+                    if (checkingP != null && checkingP.color == BLACK) {
                         gc.setFill(Color.RED);
                         gc.fillText("The King", 880, 380);
                         gc.fillText("is in Check", 870, 420);
                     }
                 } else {
                     gc.fillText("BLACK TURN", 850, 150);
-                    if( checkingP != null && checkingP.color == WHITE){
+                    if (checkingP != null && checkingP.color == WHITE) {
                         gc.setFill(Color.RED);
                         gc.fillText("The King", 880, 380);
                         gc.fillText("is in Check", 870, 420);

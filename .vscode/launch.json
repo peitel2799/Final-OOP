@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Api_call",
+            "request": "launch",
+            "mainClass": "com.example.Game.Api_call",
+            "projectName": "demo"
+        },
+        {
+            "type": "java",
             "name": "GamePvC",
             "request": "launch",
             "mainClass": "com.example.Game.GamePvC",

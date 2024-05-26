@@ -1,8 +1,8 @@
 package com.example;
 
-import com.example.Game.GamePvC;
-import com.example.Game.GamePvC1;
-import com.example.Game.GamePvP1;
+import java.util.List;
+
+import com.example.Game.GamePvB;
 import com.example.Game.GamePvP;
 import com.example.Game.Puzzle;
 import com.example.Game.Mouse;
@@ -53,13 +53,15 @@ public class Main extends Application {
         // Có thể thay đổi game từ đây
         GraphicsContext gc = canvas.getGraphicsContext2D();
         // Puzzle game  = new Puzzle(gc, mouse , canvas);
-        GamePvC1 game  = new GamePvC1(gc, mouse , canvas);
+        // GamePvC1 game  = new GamePvC1(gc, mouse , canvas);
+        GamePvB game  = new GamePvB(gc, mouse , canvas);
+        // List<String> fenAndMoves = getFenAndMoves();
+        // System.out.println(fenAndMoves);
         // GamePvP1 game = new GamePvP1(gc, mouse, canvas);
         // GamePvP game = new GamePvP(gc, mouse, canvas);
         game.gameloop();
-        List<String> fenAndMoves = getFenAndMoves();
-        System.out.println(fenAndMoves);
-        game.board.set_BoardColor(1);            // Set color of the board
+        
+        game.board.set_BoardColor(0);            // Set color of the board
         //game.initialize_color(false);            // Set the color of the first player
         
         
